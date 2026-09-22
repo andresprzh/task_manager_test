@@ -1,0 +1,9 @@
+[run]
+branch = True
+source = task_manager
+omit =
+    */tests/*
+
+[report]
+show_missing = True
+skip_covered = False

@@ -4,7 +4,7 @@
 
 Decision: use `pre-commit` to ensure code formatting with `black` and run `flake8` linting before commits.
 
-Rationale: Running `black` automatically via a git hook guarantees a consistent code style across the team and avoids style-related churn in reviews. Running `flake8` via the same hooks enforces static analysis rules and common error checks before code is committed. The `.pre-commit-config.yaml` includes both the `black` and `flake8` hooks so formatting and lint checks happen locally before commit.
+Rationale: Running `black` automatically via a git hook guarantees a consistent code style across the team and avoids style-related churn in reviews. Running `flake8` via the same hooks enforces rules and common error checks before code is committed. The `.pre-commit-config.yaml` includes both the `black` and `flake8` hooks so formatting and lint checks happen locally before commit.
 
 ## Run & deployment: Docker with small Python base image
 

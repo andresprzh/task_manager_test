@@ -65,3 +65,6 @@ Thumbs.db
 
 # Python version tool
 .python-version
+
+# Test results
+test-results/
