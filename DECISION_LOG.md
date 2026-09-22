@@ -2,25 +2,20 @@
 
 ## Format enforcement: `pre-commit`, `black` and `flake8`
 
-Decision: use `pre-commit` to ensure code formatting with `black` and run `flake8` linting before commits.
-
-Rationale: Running `black` automatically via a git hook guarantees a consistent code style across the team and avoids style-related churn in reviews. Running `flake8` via the same hooks enforces rules and common error checks before code is committed. The `.pre-commit-config.yaml` includes both the `black` and `flake8` hooks so formatting and lint checks happen locally before commit.
+To ensure consistent code formatting and linting, the project uses `pre-commit` hooks to run `black` and `flake8` before commits. This allow that this is enforced locally before code is pushed to the repository, avoiding style-related churn in reviews.
 
 ## Run & deployment: Docker with small Python base image
 
-Decision: run the application inside Docker for development and deployment, building images from a small official Python base image (Python slim).
-
-Rationale: Containerizing the app ensures consistent runtime environments across machines and CI. Using a slim Python base keeps images small and startup time reasonable while still supporting required OS-level packages.
+To run the aplication in development and deployment, the project uses Docker with a small official Python base image (Python slim). This ensures consistent runtime environments across machines and CI, while keeping images small and startup time reasonable.
 
 ## Source handling in containers: mount source as a volume (no COPY)
 
-Decision: mount the project source into the container at runtime using a Docker volume (or a bind mount) rather than copying the code into the image at build time.
-
-Rationale: Mounting the source avoids rebuilding the image for code changes during development, enables host-side editing and persistence of the SQLite database file, and keeps the image generic; the container provides the runtime environment while the host supplies editable source code.
+To handle the source code in the container, the project mounts the source code as a volume at runtime, however the `Dockerfile` still uses `COPY` to gurantee that the image is self-contained and can run without the source code mounted. This allows for a flexible development workflow where code changes on the host are reflected in the container without rebuilding the image, while still allowing for a standalone image for deployment.
 
 ## Database choice: SQLite and SQLAlchemy
 
-Decision: use SQLite for persistence and `SQLAlchemy` as the ORM for this project.
+For the database, the project uses SQLite for persistence and `SQLAlchemy` as the ORM. SQLite is a practical choice for the time-constrained technical assignment, as it is lightweight, requires no separate database server, and is sufficient for the small dataset and development workflow. `SQLAlchemy` was chosen as the ORM due to prior experience with it.
 
-Rationale: For the time-constrained technical assignment, SQLite is a practical choice — it's lightweight, requires no separate database server, and is sufficient for the small dataset and development workflow. I chose `SQLAlchemy` as the ORM because of prior experience with it.
+## Testing framework: `pytest` with coverage reports
 
+The project uses `pytest` as the testing framework, with coverage reports generated in HTML and XML formats. The test are located outside the main source code directory, in a `tests` folder, to avoid accidental imports and to ensure that the tests are run in an environment similar to production. The test results are saved in a `test-results` folder, which can be used for further analysis or integration with CI/CD pipelines. The structure of `tests` folder is organized to mirror the main source code structure, making it easy to locate and maintain tests corresponding to specific modules or features.

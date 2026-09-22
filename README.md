@@ -6,7 +6,7 @@ This sample FastAPI project demonstrates a simple layered architecture with:
 - Application: use-cases and DTOs (Pydantic schemas)
 - Infrastructure: concrete repository implementation and HTTP adapters
 
-Quickstart (Docker Compose)
+## Quickstart (Docker Compose)
 
 1. Build and start the service using Docker Compose (recommended):
 
@@ -28,7 +28,7 @@ docker compose down
 
 4. Open the docs at: http://127.0.0.1:8000/
 
-Pre-commit installation
+## Pre-commit installation
 
 This project uses `pre-commit` to run `black` on files before committing. To install and enable the git hook locally:
 
@@ -58,3 +58,13 @@ Note: the pre-commit hooks include both `black` (formatting) and `flake8` (linti
 pre-commit run black --all-files
 pre-commit run flake8 --all-files
 ```
+
+## Testing
+
+This project uses `pytest` for testing. To run the tests:
+
+```bash
+docker compose run --rm web pytest
+```
+
+The test result are saved in the `test-results` folder, including coverage reports in HTML or XML formats.
