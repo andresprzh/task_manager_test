@@ -1,0 +1,4 @@
+-r prod.txt
+black>=24.0
+flake8>=6.0
+pre-commit>=3.4
