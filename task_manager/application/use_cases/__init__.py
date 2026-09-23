@@ -1,27 +1,5 @@
 """Use cases, one module per feature."""
 
-from task_manager.application.use_cases.task import (
-    CreateListTaskUseCase,
-    CreateTaskUseCase,
-    DeleteListTaskUseCase,
-    DeleteTaskUseCase,
-    GetAllListTasksUseCase,
-    GetListTaskUseCase,
-    GetTaskUseCase,
-    UpdateListTaskUseCase,
-    UpdateTaskStatusUseCase,
-    UpdateTaskUseCase,
-)
+from task_manager.application.use_cases.task import ListTaskUseCase, TaskUseCase
 
-__all__ = [
-    "CreateListTaskUseCase",
-    "CreateTaskUseCase",
-    "DeleteListTaskUseCase",
-    "DeleteTaskUseCase",
-    "GetAllListTasksUseCase",
-    "GetListTaskUseCase",
-    "GetTaskUseCase",
-    "UpdateListTaskUseCase",
-    "UpdateTaskStatusUseCase",
-    "UpdateTaskUseCase",
-]
+__all__ = ["TaskUseCase", "ListTaskUseCase"]

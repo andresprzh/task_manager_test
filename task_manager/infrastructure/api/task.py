@@ -14,7 +14,7 @@ from task_manager.application.schemas import (
 )
 
 
-def get_list_router(create_uc, get_uc, list_uc, update_uc, delete_uc) -> APIRouter:
+def get_list_router(list_uc) -> APIRouter:
     router = APIRouter(prefix="/lists", tags=["lists"])
 
     @router.post(
@@ -29,7 +29,7 @@ def get_list_router(create_uc, get_uc, list_uc, update_uc, delete_uc) -> APIRout
 
         Its `id` is what a later `POST /tasks/` passes as `list_id`.
         """
-        return await create_uc.execute(payload)
+        return await list_uc.create(payload)
 
     @router.get(
         "/",
@@ -39,7 +39,7 @@ def get_list_router(create_uc, get_uc, list_uc, update_uc, delete_uc) -> APIRout
     )
     async def list_lists():
         """Return every task list. The tasks they own are not included."""
-        return await list_uc.execute()
+        return await list_uc.get_all()
 
     @router.get(
         "/{list_id}",
@@ -75,7 +75,7 @@ def get_list_router(create_uc, get_uc, list_uc, update_uc, delete_uc) -> APIRout
         measured against every task in the list, so the progress figure stays
         stable no matter how you filter.
         """
-        task_list = await get_uc.execute(list_id, status=status, priority=priority)
+        task_list = await list_uc.get(list_id, status=status, priority=priority)
         if not task_list:
             raise HTTPException(status_code=404, detail="List not found")
         return task_list
@@ -101,7 +101,7 @@ def get_list_router(create_uc, get_uc, list_uc, update_uc, delete_uc) -> APIRout
         The `id` is taken from the path and cannot be changed; sending `id`
         (or any other unknown key) in the body is rejected with a 422.
         """
-        task_list = await update_uc.execute(list_id, payload)
+        task_list = await list_uc.update(list_id, payload)
         if not task_list:
             raise HTTPException(status_code=404, detail="List not found")
         return task_list
@@ -118,16 +118,14 @@ def get_list_router(create_uc, get_uc, list_uc, update_uc, delete_uc) -> APIRout
         The tasks pointing at it are left untouched, so they end up orphaned.
         """
         try:
-            await delete_uc.execute(list_id)
+            await list_uc.delete(list_id)
         except ValueError:
             raise HTTPException(status_code=404, detail="List not found")
 
     return router
 
 
-def get_task_router(
-    create_uc, get_uc, update_uc, update_status_uc, delete_uc
-) -> APIRouter:
+def get_task_router(task_uc) -> APIRouter:
     router = APIRouter(prefix="/tasks", tags=["tasks"])
 
     @router.post(
@@ -151,7 +149,7 @@ def get_task_router(
         The `id` is generated server-side and returned in the `TaskRead`
         response, so do not send one.
         """
-        return await create_uc.execute(payload)
+        return await task_uc.create(payload)
 
     @router.get(
         "/{task_id}",
@@ -161,7 +159,7 @@ def get_task_router(
     )
     async def get_task(task_id: UUID):
         """Retrieve a single task by UUID."""
-        task = await get_uc.execute(task_id)
+        task = await task_uc.get(task_id)
         if not task:
             raise HTTPException(status_code=404, detail="Task not found")
         return task
@@ -190,7 +188,7 @@ def get_task_router(
         The `id` is taken from the path and cannot be changed; sending `id`
         (or any other unknown key) in the body is rejected with a 422.
         """
-        task = await update_uc.execute(task_id, payload)
+        task = await task_uc.update(task_id, payload)
         if not task:
             raise HTTPException(status_code=404, detail="Task not found")
         return task
@@ -211,7 +209,7 @@ def get_task_router(
 
         Everything else about the task is left exactly as it was.
         """
-        task = await update_status_uc.execute(task_id, payload)
+        task = await task_uc.update_status(task_id, payload)
         if not task:
             raise HTTPException(status_code=404, detail="Task not found")
         return task
@@ -224,6 +222,6 @@ def get_task_router(
     )
     async def delete_task(task_id: UUID):
         """Delete a task by UUID."""
-        await delete_uc.execute(task_id)
+        await task_uc.delete(task_id)
 
     return router

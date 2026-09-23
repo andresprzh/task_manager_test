@@ -17,13 +17,11 @@ class ListTaskCreate(BaseModel):
         ...,
         title="Name",
         description="Short, human-readable name of the list. Required.",
-        example="Groceries",
     )
     description: Optional[str] = Field(
         None,
         title="Description",
         description="Optional free-text detail about the list.",
-        example="Everything to buy this week",
     )
 
 
@@ -53,9 +51,9 @@ class ListTaskUpdate(ListTaskCreate):
 class ListTaskRead(BaseModel):
     """A task list on its own. The tasks it owns are not embedded here."""
 
-    id: UUID = Field(..., title="ID", example="9f8d7c6b-5a4e-4d3c-2b1a-0f9e8d7c6b5a")
-    name: str = Field(..., example="Groceries")
-    description: Optional[str] = Field(None, example="Everything to buy this week")
+    id: UUID = Field(..., title="ID")
+    name: str = Field(...)
+    description: Optional[str] = Field(None)
     model_config = {
         "from_attributes": True,
         "json_schema_extra": {
@@ -80,7 +78,6 @@ class TaskCreate(BaseModel):
         ...,
         title="Title",
         description="Short, human-readable name of the task. Required.",
-        example="Buy groceries",
     )
     list_id: UUID = Field(
         ...,
@@ -89,13 +86,11 @@ class TaskCreate(BaseModel):
             "UUID of the list that owns this task. Required — a task cannot "
             "exist outside a list. Use the `id` returned by `POST /lists/`."
         ),
-        example="9f8d7c6b-5a4e-4d3c-2b1a-0f9e8d7c6b5a",
     )
     description: Optional[str] = Field(
         None,
         title="Description",
         description="Optional free-text detail about the task.",
-        example="Milk, eggs, bread",
     )
     status: Status = Field(
         Status.PENDING,
@@ -107,7 +102,6 @@ class TaskCreate(BaseModel):
             "- `completed` — finished; these are what "
             "`completed_percentage` counts on `GET /lists/{list_id}`"
         ),
-        example=Status.PENDING,
     )
     priority: Priority = Field(
         Priority.MEDIUM,
@@ -119,7 +113,6 @@ class TaskCreate(BaseModel):
             "- `medium` — normal, scheduled work\n"
             "- `low` — nice to have, no deadline pressure"
         ),
-        example=Priority.MEDIUM,
     )
 
 
@@ -169,7 +162,6 @@ class TaskStatusUpdate(BaseModel):
             "- `completed` — finished; these are what "
             "`completed_percentage` counts on `GET /lists/{list_id}`"
         ),
-        example=Status.COMPLETED,
     )
     model_config = {
         "extra": "forbid",
@@ -178,12 +170,12 @@ class TaskStatusUpdate(BaseModel):
 
 
 class TaskRead(BaseModel):
-    id: UUID = Field(..., title="ID", example="3fa85f64-5717-4562-b3fc-2c963f66afa6")
-    title: str = Field(..., example="Buy groceries")
-    list_id: UUID = Field(..., example="9f8d7c6b-5a4e-4d3c-2b1a-0f9e8d7c6b5a")
-    description: Optional[str] = Field(None, example="Milk, eggs, bread")
-    status: Status = Field(Status.PENDING, example=Status.PENDING)
-    priority: Priority = Field(Priority.MEDIUM, example=Priority.MEDIUM)
+    id: UUID = Field(..., title="ID")
+    title: str = Field(...)
+    list_id: UUID = Field(...)
+    description: Optional[str] = Field(None)
+    status: Status = Field(Status.PENDING)
+    priority: Priority = Field(Priority.MEDIUM)
     model_config = {
         "from_attributes": True,
         "json_schema_extra": {
