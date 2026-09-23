@@ -19,6 +19,12 @@ class TaskRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    async def update(self, task: Task) -> Task:
+        """Persist an already-loaded task. Which fields a caller is allowed to
+        change is an application concern, not a persistence one."""
+        raise NotImplementedError
+
+    @abstractmethod
     async def delete(self, task: Task) -> UUID:
         raise NotImplementedError
 
@@ -40,6 +46,12 @@ class ListTaskRepository(ABC):
 
     @abstractmethod
     async def list(self) -> List[ListTask]:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def update(self, task_list: ListTask) -> ListTask:
+        """Persist an already-loaded list. Only its own fields are written;
+        the tasks it owns are managed through ``TaskRepository``."""
         raise NotImplementedError
 
     @abstractmethod

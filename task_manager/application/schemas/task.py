@@ -6,10 +6,48 @@ from task_manager.domain.models import Priority, Status
 
 
 class ListTaskCreate(BaseModel):
-    name: str = Field(..., title="Name", example="Groceries")
-    description: Optional[str] = Field(
-        None, title="Description", example="Everything to buy this week"
+    """Payload for creating a task list.
+
+    Only `name` is required. The server assigns the `id`, so it is never
+    accepted here. Tasks are not created through this payload — create the
+    list first, then `POST /tasks/` with the returned `id` as `list_id`.
+    """
+
+    name: str = Field(
+        ...,
+        title="Name",
+        description="Short, human-readable name of the list. Required.",
+        example="Groceries",
     )
+    description: Optional[str] = Field(
+        None,
+        title="Description",
+        description="Optional free-text detail about the list.",
+        example="Everything to buy this week",
+    )
+
+
+class ListTaskUpdate(ListTaskCreate):
+    """Payload for `PUT /lists/{list_id}` — a full replacement of the list.
+
+    Carries the same fields as `ListTaskCreate`, but describes what the list
+    should look like *in its entirety* afterwards: omitting `description`
+    clears it rather than keeping it.
+
+    Only the list's own fields are touched. The tasks inside it are left
+    alone — add, change or remove those through `/tasks/`. The `id` is fixed
+    by the path and cannot be changed; sending one is rejected with a 422.
+    """
+
+    model_config = {
+        "extra": "forbid",
+        "json_schema_extra": {
+            "example": {
+                "name": "Groceries",
+                "description": "Everything to buy this week",
+            }
+        },
+    }
 
 
 class ListTaskRead(BaseModel):
@@ -83,6 +121,60 @@ class TaskCreate(BaseModel):
         ),
         example=Priority.MEDIUM,
     )
+
+
+class TaskUpdate(TaskCreate):
+    """Payload for `PUT /tasks/{task_id}` — a full replacement of the task.
+
+    Carries the same fields as `TaskCreate`, and the same defaults, but the
+    semantics differ: this describes what the task should look like *in its
+    entirety* afterwards. Anything you leave out is reset to its default
+    rather than kept, so omitting `description` clears it and omitting
+    `status` sends the task back to `pending`. Use `PATCH` to move only the
+    status and leave everything else alone.
+
+    Changing `list_id` moves the task to another list. The `id` is fixed by
+    the path and cannot be changed; sending one is rejected with a 422.
+    """
+
+    model_config = {
+        "extra": "forbid",
+        "json_schema_extra": {
+            "example": {
+                "title": "Buy groceries",
+                "list_id": "9f8d7c6b-5a4e-4d3c-2b1a-0f9e8d7c6b5a",
+                "description": "Milk, eggs, bread",
+                "status": "in_progress",
+                "priority": "high",
+            }
+        },
+    }
+
+
+class TaskStatusUpdate(BaseModel):
+    """Payload for `PATCH /tasks/{task_id}`.
+
+    `status` is the only field a task exposes for update. Any other key is
+    rejected with a 422 rather than being silently ignored — to change a
+    title, priority or list, delete the task and create it again.
+    """
+
+    status: Status = Field(
+        ...,
+        title="Status",
+        description=(
+            "The new state of the task. Required. One of:\n\n"
+            "- `pending` — not started yet\n"
+            "- `in_progress` — actively being worked on\n"
+            "- `completed` — finished; these are what "
+            "`completed_percentage` counts on `GET /lists/{list_id}`"
+        ),
+        example=Status.COMPLETED,
+    )
+    model_config = {
+        "extra": "forbid",
+        "json_schema_extra": {"example": {"status": "completed"}},
+    }
 
 
 class TaskRead(BaseModel):

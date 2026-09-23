@@ -13,6 +13,9 @@ from task_manager.application.use_cases import (
     GetAllListTasksUseCase,
     GetListTaskUseCase,
     GetTaskUseCase,
+    UpdateListTaskUseCase,
+    UpdateTaskStatusUseCase,
+    UpdateTaskUseCase,
 )
 from task_manager.infrastructure.api import get_list_router, get_task_router
 
@@ -25,11 +28,14 @@ def create_app() -> FastAPI:
 
     create_uc = CreateTaskUseCase(task_repo)
     get_uc = GetTaskUseCase(task_repo)
+    update_uc = UpdateTaskUseCase(task_repo)
+    update_status_uc = UpdateTaskStatusUseCase(task_repo)
     delete_uc = DeleteTaskUseCase(task_repo)
 
     create_list_uc = CreateListTaskUseCase(list_repo)
     get_list_uc = GetListTaskUseCase(list_repo)
     list_lists_uc = GetAllListTasksUseCase(list_repo)
+    update_list_uc = UpdateListTaskUseCase(list_repo)
     delete_list_uc = DeleteListTaskUseCase(list_repo)
 
     # Provide OpenAPI metadata and disable default docs URLs so we can customize
@@ -43,9 +49,17 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(
-        get_list_router(create_list_uc, get_list_uc, list_lists_uc, delete_list_uc)
+        get_list_router(
+            create_list_uc,
+            get_list_uc,
+            list_lists_uc,
+            update_list_uc,
+            delete_list_uc,
+        )
     )
-    app.include_router(get_task_router(create_uc, get_uc, delete_uc))
+    app.include_router(
+        get_task_router(create_uc, get_uc, update_uc, update_status_uc, delete_uc)
+    )
 
     @app.get("/", include_in_schema=False)
     async def custom_swagger_ui():

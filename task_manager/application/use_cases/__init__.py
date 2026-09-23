@@ -8,6 +8,9 @@ from task_manager.application.use_cases.task import (
     GetAllListTasksUseCase,
     GetListTaskUseCase,
     GetTaskUseCase,
+    UpdateListTaskUseCase,
+    UpdateTaskStatusUseCase,
+    UpdateTaskUseCase,
 )
 
 __all__ = [
@@ -18,4 +21,7 @@ __all__ = [
     "GetAllListTasksUseCase",
     "GetListTaskUseCase",
     "GetTaskUseCase",
+    "UpdateListTaskUseCase",
+    "UpdateTaskStatusUseCase",
+    "UpdateTaskUseCase",
 ]

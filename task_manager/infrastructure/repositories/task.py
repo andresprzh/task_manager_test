@@ -113,6 +113,17 @@ class SQLAlchemyListTaskRepository(ListTaskRepository):
             rows = result.scalars().all()
             return [_list_to_domain(row) for row in rows]
 
+    async def update(self, task_list: DomainListTask) -> DomainListTask:
+        async with self._session_factory() as session:
+            orm = await session.get(ListTaskORM, str(task_list.id))
+            if not orm:
+                raise ValueError("List not found")
+            orm.name = task_list.name
+            orm.description = task_list.description
+            await session.commit()
+            await session.refresh(orm)
+            return _list_to_domain(orm)
+
 
 class SQLAlchemyTaskRepository(TaskRepository):
     def __init__(self, session_factory: sessionmaker):
@@ -154,3 +165,17 @@ class SQLAlchemyTaskRepository(TaskRepository):
             result = await session.execute(select(TaskORM))
             rows = result.scalars().all()
             return [_task_to_domain(row) for row in rows]
+
+    async def update(self, task: DomainTask) -> DomainTask:
+        async with self._session_factory() as session:
+            orm = await session.get(TaskORM, str(task.id))
+            if not orm:
+                raise ValueError("Task not found")
+            orm.title = task.title
+            orm.list_id = str(task.list_id)
+            orm.description = task.description
+            orm.status = task.status
+            orm.priority = task.priority
+            await session.commit()
+            await session.refresh(orm)
+            return _task_to_domain(orm)

@@ -6,8 +6,11 @@ from task_manager.application.schemas import (
     ListTaskCreate,
     ListTaskDetailRead,
     ListTaskRead,
+    ListTaskUpdate,
     TaskCreate,
     TaskRead,
+    TaskStatusUpdate,
+    TaskUpdate,
 )
 
 
@@ -35,6 +38,23 @@ class DeleteListTaskUseCase:
             raise ValueError("List not found")
 
         return await self.repo.delete(task_list)
+
+
+class UpdateListTaskUseCase:
+    """Replace a list's own fields, leaving the tasks inside it alone."""
+
+    def __init__(self, repo: ListTaskRepository):
+        self.repo = repo
+
+    async def execute(self, id: UUID, data: ListTaskUpdate) -> Optional[ListTaskRead]:
+        task_list = await self.repo.get(id)
+        if not task_list:
+            return None
+
+        task_list.name = data.name
+        task_list.description = data.description
+        updated = await self.repo.update(task_list)
+        return ListTaskRead.model_validate(updated)
 
 
 class GetListTaskUseCase:
@@ -117,6 +137,42 @@ class DeleteTaskUseCase:
         deleted = await self.repo.delete(task)
 
         return deleted
+
+
+class UpdateTaskUseCase:
+    """Replace every mutable field of a task, keeping only its id."""
+
+    def __init__(self, repo: TaskRepository):
+        self.repo = repo
+
+    async def execute(self, id: UUID, data: TaskUpdate) -> Optional[TaskRead]:
+        task = await self.repo.get(id)
+        if not task:
+            return None
+
+        task.title = data.title
+        task.list_id = data.list_id
+        task.description = data.description
+        task.status = data.status
+        task.priority = data.priority
+        updated = await self.repo.update(task)
+        return TaskRead.model_validate(updated)
+
+
+class UpdateTaskStatusUseCase:
+    """Move a task to a new status, leaving every other field untouched."""
+
+    def __init__(self, repo: TaskRepository):
+        self.repo = repo
+
+    async def execute(self, id: UUID, data: TaskStatusUpdate) -> Optional[TaskRead]:
+        task = await self.repo.get(id)
+        if not task:
+            return None
+
+        task.status = data.status
+        updated = await self.repo.update(task)
+        return TaskRead.model_validate(updated)
 
 
 class GetTaskUseCase:

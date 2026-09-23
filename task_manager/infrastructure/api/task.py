@@ -6,12 +6,15 @@ from task_manager.application.schemas import (
     ListTaskCreate,
     ListTaskDetailRead,
     ListTaskRead,
+    ListTaskUpdate,
     TaskCreate,
     TaskRead,
+    TaskStatusUpdate,
+    TaskUpdate,
 )
 
 
-def get_list_router(create_uc, get_uc, list_uc, delete_uc) -> APIRouter:
+def get_list_router(create_uc, get_uc, list_uc, update_uc, delete_uc) -> APIRouter:
     router = APIRouter(prefix="/lists", tags=["lists"])
 
     @router.post(
@@ -77,6 +80,32 @@ def get_list_router(create_uc, get_uc, list_uc, delete_uc) -> APIRouter:
             raise HTTPException(status_code=404, detail="List not found")
         return task_list
 
+    @router.put(
+        "/{list_id}",
+        response_model=ListTaskRead,
+        summary="Replace a task list",
+        response_description="The list as it now stands",
+    )
+    async def update_list(list_id: UUID, payload: ListTaskUpdate):
+        """Replace a task list's own fields.
+
+        | Field | Required | Notes |
+        | --- | --- | --- |
+        | `name` | yes | Short name of the list. |
+        | `description` | no | **Cleared** to `null` if omitted. |
+
+        This is a full replacement of the list itself, so anything you leave
+        out goes back to its default. The tasks inside the list are not
+        touched — manage those through `/tasks/`.
+
+        The `id` is taken from the path and cannot be changed; sending `id`
+        (or any other unknown key) in the body is rejected with a 422.
+        """
+        task_list = await update_uc.execute(list_id, payload)
+        if not task_list:
+            raise HTTPException(status_code=404, detail="List not found")
+        return task_list
+
     @router.delete(
         "/{list_id}",
         status_code=204,
@@ -96,7 +125,9 @@ def get_list_router(create_uc, get_uc, list_uc, delete_uc) -> APIRouter:
     return router
 
 
-def get_task_router(create_uc, get_uc, delete_uc) -> APIRouter:
+def get_task_router(
+    create_uc, get_uc, update_uc, update_status_uc, delete_uc
+) -> APIRouter:
     router = APIRouter(prefix="/tasks", tags=["tasks"])
 
     @router.post(
@@ -131,6 +162,56 @@ def get_task_router(create_uc, get_uc, delete_uc) -> APIRouter:
     async def get_task(task_id: UUID):
         """Retrieve a single task by UUID."""
         task = await get_uc.execute(task_id)
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+        return task
+
+    @router.put(
+        "/{task_id}",
+        response_model=TaskRead,
+        summary="Replace a task",
+        response_description="The task as it now stands",
+    )
+    async def update_task(task_id: UUID, payload: TaskUpdate):
+        """Replace every field of a task.
+
+        | Field | Required | Notes |
+        | --- | --- | --- |
+        | `title` | yes | Short name of the task. |
+        | `list_id` | yes | Change it to move the task to another list. |
+        | `description` | no | **Cleared** to `null` if omitted. |
+        | `status` | no | **Reset** to `pending` if omitted. |
+        | `priority` | no | **Reset** to `medium` if omitted. |
+
+        This is a full replacement: send the complete task as you want it to
+        end up, because anything you leave out goes back to its default. To
+        change only the status, use `PATCH /tasks/{task_id}` instead.
+
+        The `id` is taken from the path and cannot be changed; sending `id`
+        (or any other unknown key) in the body is rejected with a 422.
+        """
+        task = await update_uc.execute(task_id, payload)
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+        return task
+
+    @router.patch(
+        "/{task_id}",
+        response_model=TaskRead,
+        summary="Update a task's status",
+        response_description="The task with its new status",
+    )
+    async def update_task_status(task_id: UUID, payload: TaskStatusUpdate):
+        """Move a task to a new status.
+
+        `status` is the only updatable field, and it is required — send
+        `{"status": "completed"}`. Sending any other key (`title`, `priority`,
+        `list_id`, ...) is rejected with a 422 instead of being ignored, so a
+        client never believes it changed something it did not.
+
+        Everything else about the task is left exactly as it was.
+        """
+        task = await update_status_uc.execute(task_id, payload)
         if not task:
             raise HTTPException(status_code=404, detail="Task not found")
         return task
