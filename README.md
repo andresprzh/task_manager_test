@@ -68,7 +68,14 @@ docker compose down
 
 ## Pre-commit installation
 
-This project uses `pre-commit` to run `black` on files before committing. To install and enable the git hook locally:
+This project uses `pre-commit` to run `black` on files before committing,  and `flake8` for linting. To install and enable the git hook locally:
+
+1. Creae a virtual environment and activate it:
+
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+```
 
 1. Install dev dependencies (includes `pre-commit`):
 
