@@ -21,8 +21,47 @@ To make the database persistent across container restarts, the SQLite database f
 
 ## Architecture: layered architecture
 
-For  he architecture, the project follows a layered architecture. The project is composed of 3 layers, application, domain and infrastructure. The application layer contains the main entry point of the application, the domain layer contains the business logic and domain models, and the infrastructure layer contains the implementation details for external dependencies such as databases and APIs.
+For the architecture, the project follows a layered architecture. The project is composed of 3 layers: application, domain, and infrastructure. The application layer contains the main entry point of the application, the domain layer contains the business logic and domain models, and the infrastructure layer contains the implementation details for external dependencies such as databases and APIs.
+
+### Folder Organization
+
+```
+task_manager/
+├── app/
+│   ├── __init__.py
+│   └── main.py                 # FastAPI app initialization and router setup
+├── application/
+│   ├── __init__.py
+│   ├── schemas/                # Pydantic models for request/response
+│   └── use_cases/              # Business logic orchestrators
+│       ├── __init__.py
+│       └── task.py             # TaskUseCase, ListTaskUseCase
+├── domain/
+│   ├── __init__.py
+│   ├── models/                 # Domain entities (Task, ListTask)
+│   │   ├── __init__.py
+│   │   └── task.py
+│   └── repositories/           # Repository interfaces
+│       ├── __init__.py
+│       └── base.py
+└── infrastructure/
+    ├── __init__.py
+    ├── api/                    # FastAPI router functions
+    │   ├── __init__.py
+    │   └── task.py             # API endpoints for tasks/lists
+    └── repositories/           # Repository implementations (SQLAlchemy)
+        ├── __init__.py
+        └── task.py             # SQLAlchemyTaskRepository, SQLAlchemyListTaskRepository
+
+tests/                          # Mirror of source structure with corresponding tests
+├── application/
+├── domain/
+├── infrastructure/
+└── conftest.py                 # Pytest fixtures
+```
 
 ## Testing framework: `pytest` with coverage reports
 
 The project uses `pytest` as the testing framework, with coverage reports generated in HTML and XML formats. The test are located outside the main source code directory, in a `tests` folder, to avoid accidental imports and to ensure that the tests are run in an environment similar to production. The test results are saved in a `test-results` folder, which can be used for further analysis or integration with CI/CD pipelines. The structure of `tests` folder is organized to mirror the main source code structure, making it easy to locate and maintain tests corresponding to specific modules or features.
+
+To decouple the tests from the actual database, the project uses fake in-memory implementations of the use cases for testing the API endpoints. This allows isolated tests that do not depend on the database state or external factors.
