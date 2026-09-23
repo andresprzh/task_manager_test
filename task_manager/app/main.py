@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.openapi.docs import get_swagger_ui_html
 from task_manager.infrastructure.repositories import (
-    init_db_sync,
+    init_async_db,
     SQLAlchemyListTaskRepository,
     SQLAlchemyTaskRepository,
 )
@@ -20,9 +20,27 @@ from task_manager.application.use_cases import (
 from task_manager.infrastructure.api import get_list_router, get_task_router
 
 
-def create_app() -> FastAPI:
-    # initialize async DB and sessionmaker synchronously during app creation
-    session_maker = init_db_sync()
+# Provide OpenAPI metadata and disable default docs URLs so we can customize
+app = FastAPI(
+    title="Task Manager (Layered)",
+    description="A small demo showing Domain / Application / Infrastructure layers",
+    version="0.1.0",
+    docs_url=None,
+    redoc_url=None,
+    openapi_url="/openapi.json",
+)
+
+
+@app.on_event("startup")
+async def startup():
+    """Initialize the async DB and register routers when the app starts.
+
+    Doing DB initialization here avoids calling `asyncio.run` from code that
+    may already be running inside an event loop (this happens with
+    `uvicorn --reload`).
+    """
+    session_maker = await init_async_db()
+
     task_repo = SQLAlchemyTaskRepository(session_maker)
     list_repo = SQLAlchemyListTaskRepository(session_maker)
 
@@ -38,16 +56,6 @@ def create_app() -> FastAPI:
     update_list_uc = UpdateListTaskUseCase(list_repo)
     delete_list_uc = DeleteListTaskUseCase(list_repo)
 
-    # Provide OpenAPI metadata and disable default docs URLs so we can customize
-    app = FastAPI(
-        title="Task Manager (Layered)",
-        description="A small demo showing Domain / Application / Infrastructure layers",
-        version="0.1.0",
-        docs_url=None,
-        redoc_url=None,
-        openapi_url="/openapi.json",
-    )
-
     app.include_router(
         get_list_router(
             create_list_uc,
@@ -61,17 +69,13 @@ def create_app() -> FastAPI:
         get_task_router(create_uc, get_uc, update_uc, update_status_uc, delete_uc)
     )
 
-    @app.get("/", include_in_schema=False)
-    async def custom_swagger_ui():
-        """Serve Swagger UI using FastAPI's built-in helper.
 
-        No extra dependency required — FastAPI includes Swagger UI and ReDoc endpoints.
-        """
-        return get_swagger_ui_html(
-            openapi_url=app.openapi_url, title=f"{app.title} - Swagger UI"
-        )
+@app.get("/", include_in_schema=False)
+async def custom_swagger_ui():
+    """Serve Swagger UI using FastAPI's built-in helper.
 
-    return app
-
-
-app = create_app()
+    No extra dependency required — FastAPI includes Swagger UI and ReDoc endpoints.
+    """
+    return get_swagger_ui_html(
+        openapi_url=app.openapi_url, title=f"{app.title} - Swagger UI"
+    )

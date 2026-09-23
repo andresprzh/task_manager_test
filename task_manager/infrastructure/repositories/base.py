@@ -14,7 +14,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 Base = declarative_base()
 
-DEFAULT_DB_URL = "sqlite+aiosqlite:///./task_manager.db"
+DEFAULT_DB_URL = "sqlite+aiosqlite:///./data/task_manager.db"
 
 
 def enum_column(enum_cls, default):
