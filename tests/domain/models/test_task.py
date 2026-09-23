@@ -4,6 +4,8 @@ from task_manager.domain.models import ListTask, Priority, Status, Task
 
 
 def test_task_model_defaults():
+    """Test that the Task model initializes with default values for optional fields."""
+
     task_id = uuid4()
     list_id = uuid4()
     task = Task(id=task_id, title="Write release notes", list_id=list_id)
@@ -17,6 +19,8 @@ def test_task_model_defaults():
 
 
 def test_list_task_holds_many_tasks():
+    """Test that the ListTask model can hold multiple Task instances."""
+
     list_id = uuid4()
     first = Task(id=uuid4(), title="Draft changelog", list_id=list_id)
     second = Task(
@@ -33,6 +37,8 @@ def test_list_task_holds_many_tasks():
 
 
 def test_list_task_defaults_to_no_tasks():
+    """Test that a new ListTask initializes with an empty list of tasks by default."""
+
     task_list = ListTask(id=uuid4(), name="Inbox")
 
     assert task_list.tasks == []
