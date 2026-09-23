@@ -22,6 +22,10 @@ from task_manager.infrastructure.repositories.task import (
     SQLAlchemyTaskRepository,
     TaskORM,
 )
+from task_manager.infrastructure.repositories.user import (
+    SQLAlchemyUserRepository,
+    UserORM,
+)
 
 __all__ = [
     "Base",
@@ -33,4 +37,6 @@ __all__ = [
     "SQLAlchemyListTaskRepository",
     "SQLAlchemyTaskRepository",
     "TaskORM",
+    "SQLAlchemyUserRepository",
+    "UserORM",
 ]

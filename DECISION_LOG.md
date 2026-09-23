@@ -65,3 +65,7 @@ tests/                          # Mirror of source structure with corresponding 
 The project uses `pytest` as the testing framework, with coverage reports generated in HTML and XML formats. The test are located outside the main source code directory, in a `tests` folder, to avoid accidental imports and to ensure that the tests are run in an environment similar to production. The test results are saved in a `test-results` folder, which can be used for further analysis or integration with CI/CD pipelines. The structure of `tests` folder is organized to mirror the main source code structure, making it easy to locate and maintain tests corresponding to specific modules or features.
 
 To decouple the tests from the actual database, the project uses fake in-memory implementations of the use cases for testing the API endpoints. This allows isolated tests that do not depend on the database state or external factors.
+
+## Authentication: JWT with FastAPI
+
+For the authentication mechanism, the project uses JWT (JSON Web Tokens) with FastAPI. For the implementation the project uses the `PyJWT` and `python-jose` libraries to handle token creation, signing, and verification. The authentication flow is implemented using FastAPI's dependency injection systeml. This depencendy are located in the application layer `dependencies.py`, and then I used the Dependency() function to define the authentication dependency for the API endpoints.

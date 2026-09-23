@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from typing import Optional
 from uuid import UUID
 from task_manager.domain.models import Priority, Status
@@ -12,6 +12,7 @@ from task_manager.application.schemas import (
     TaskStatusUpdate,
     TaskUpdate,
 )
+from task_manager.application.dependencies import verify_token
 
 
 def get_list_router(list_uc) -> APIRouter:
@@ -24,7 +25,7 @@ def get_list_router(list_uc) -> APIRouter:
         summary="Create a task list",
         response_description="The created list",
     )
-    async def create_list(payload: ListTaskCreate):
+    async def create_list(payload: ListTaskCreate, _: str = Depends(verify_token)):
         """Create a new task list.
 
         Its `id` is what a later `POST /tasks/` passes as `list_id`.
@@ -37,7 +38,7 @@ def get_list_router(list_uc) -> APIRouter:
         summary="List task lists",
         response_description="All task lists",
     )
-    async def list_lists():
+    async def list_lists(_: str = Depends(verify_token)):
         """Return every task list. The tasks they own are not included."""
         return await list_uc.get_all()
 
@@ -65,6 +66,7 @@ def get_list_router(list_uc) -> APIRouter:
                 "all. One of `high`, `medium`, `low`."
             ),
         ),
+        _: str = Depends(verify_token),
     ):
         """Retrieve one task list by UUID, with the tasks that belong to it.
 
@@ -86,7 +88,9 @@ def get_list_router(list_uc) -> APIRouter:
         summary="Replace a task list",
         response_description="The list as it now stands",
     )
-    async def update_list(list_id: UUID, payload: ListTaskUpdate):
+    async def update_list(
+        list_id: UUID, payload: ListTaskUpdate, _: str = Depends(verify_token)
+    ):
         """Replace a task list's own fields.
 
         | Field | Required | Notes |
@@ -112,7 +116,7 @@ def get_list_router(list_uc) -> APIRouter:
         summary="Delete a task list",
         response_description="The list was deleted",
     )
-    async def delete_list(list_id: UUID):
+    async def delete_list(list_id: UUID, _: str = Depends(verify_token)):
         """Delete a task list by UUID.
 
         The tasks pointing at it are left untouched, so they end up orphaned.
@@ -135,7 +139,7 @@ def get_task_router(task_uc) -> APIRouter:
         summary="Create a task",
         response_description="The created task",
     )
-    async def create_task(payload: TaskCreate):
+    async def create_task(payload: TaskCreate, _: str = Depends(verify_token)):
         """Create a new task inside a list.
 
         | Field | Required | Notes |
@@ -157,7 +161,7 @@ def get_task_router(task_uc) -> APIRouter:
         summary="Get a task by ID",
         response_description="The task with the given id",
     )
-    async def get_task(task_id: UUID):
+    async def get_task(task_id: UUID, _: str = Depends(verify_token)):
         """Retrieve a single task by UUID."""
         task = await task_uc.get(task_id)
         if not task:
@@ -170,7 +174,9 @@ def get_task_router(task_uc) -> APIRouter:
         summary="Replace a task",
         response_description="The task as it now stands",
     )
-    async def update_task(task_id: UUID, payload: TaskUpdate):
+    async def update_task(
+        task_id: UUID, payload: TaskUpdate, _: str = Depends(verify_token)
+    ):
         """Replace every field of a task.
 
         | Field | Required | Notes |
@@ -199,7 +205,9 @@ def get_task_router(task_uc) -> APIRouter:
         summary="Update a task's status",
         response_description="The task with its new status",
     )
-    async def update_task_status(task_id: UUID, payload: TaskStatusUpdate):
+    async def update_task_status(
+        task_id: UUID, payload: TaskStatusUpdate, _: str = Depends(verify_token)
+    ):
         """Move a task to a new status.
 
         `status` is the only updatable field, and it is required — send
@@ -220,7 +228,7 @@ def get_task_router(task_uc) -> APIRouter:
         summary="Delete a task",
         response_description="The task was deleted",
     )
-    async def delete_task(task_id: UUID):
+    async def delete_task(task_id: UUID, _: str = Depends(verify_token)):
         """Delete a task by UUID."""
         await task_uc.delete(task_id)
 

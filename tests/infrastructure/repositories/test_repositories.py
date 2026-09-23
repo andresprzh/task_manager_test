@@ -56,6 +56,7 @@ async def test_task_repository_and_get_with_tasks(session_maker):
 
     # create a task
     task_id = uuid.uuid4()
+    user_id = uuid.uuid4()
     domain_task = Task(
         id=task_id,
         title="T1",
@@ -63,10 +64,12 @@ async def test_task_repository_and_get_with_tasks(session_maker):
         description="task desc",
         status=Status.PENDING,
         priority=Priority.MEDIUM,
+        user_id=user_id,
     )
     created_task = await task_repo.create(domain_task)
     assert created_task.id == task_id
     assert created_task.title == "T1"
+    assert created_task.user_id == user_id
 
     # get
     fetched = await task_repo.get(task_id)
@@ -83,11 +86,14 @@ async def test_task_repository_and_get_with_tasks(session_maker):
     assert any(t.id == task_id for t in list_with_tasks.tasks)
 
     # update task
+    new_user_id = uuid.uuid4()
     domain_task.title = "T1 updated"
     domain_task.status = Status.IN_PROGRESS
+    domain_task.user_id = new_user_id
     updated = await task_repo.update(domain_task)
     assert updated.title == "T1 updated"
     assert updated.status == Status.IN_PROGRESS
+    assert updated.user_id == new_user_id
 
     # delete task
     deleted = await task_repo.delete(domain_task)

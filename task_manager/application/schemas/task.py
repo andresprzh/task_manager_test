@@ -114,6 +114,11 @@ class TaskCreate(BaseModel):
             "- `low` — nice to have, no deadline pressure"
         ),
     )
+    user_id: Optional[UUID] = Field(
+        None,
+        title="User ID",
+        description="Optional UUID of the user assigned to this task.",
+    )
 
 
 class TaskUpdate(TaskCreate):
@@ -176,6 +181,7 @@ class TaskRead(BaseModel):
     description: Optional[str] = Field(None)
     status: Status = Field(Status.PENDING)
     priority: Priority = Field(Priority.MEDIUM)
+    user_id: Optional[UUID] = Field(None, title="User ID")
     model_config = {
         "from_attributes": True,
         "json_schema_extra": {
@@ -186,6 +192,7 @@ class TaskRead(BaseModel):
                 "description": "Milk, eggs, bread",
                 "status": "pending",
                 "priority": "medium",
+                "user_id": None,
             }
         },
     }

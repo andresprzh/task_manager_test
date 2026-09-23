@@ -26,6 +26,7 @@ class TaskUseCase:
             description=data.description,
             status=data.status,
             priority=data.priority,
+            user_id=data.user_id,
         )
         created = await self.repo.create(task)
         return TaskRead.model_validate(created)
@@ -45,6 +46,7 @@ class TaskUseCase:
         task.description = data.description
         task.status = data.status
         task.priority = data.priority
+        task.user_id = data.user_id
         updated = await self.repo.update(task)
         return TaskRead.model_validate(updated)
 

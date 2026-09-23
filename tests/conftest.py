@@ -89,6 +89,7 @@ def fake_task_usecases():
                 description=data.description,
                 status=data.status,
                 priority=data.priority,
+                user_id=getattr(data, "user_id", None),
             )
             self.storage[str(t.id)] = t
             return t
@@ -105,6 +106,7 @@ def fake_task_usecases():
             t.description = data.description
             t.status = data.status
             t.priority = data.priority
+            t.user_id = getattr(data, "user_id", None)
             self.storage[str(id)] = t
             return t
 

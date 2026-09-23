@@ -28,6 +28,7 @@ class Task:
     description: Optional[str] = None
     status: Status = Status.PENDING
     priority: Priority = Priority.MEDIUM
+    user_id: Optional[UUID] = None
 
 
 @dataclass

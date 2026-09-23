@@ -5,5 +5,6 @@ These are abstract on purpose: the domain declares what it needs, and
 """
 
 from task_manager.domain.repositories.task import ListTaskRepository, TaskRepository
+from task_manager.domain.repositories.user import UserRepository
 
-__all__ = ["ListTaskRepository", "TaskRepository"]
+__all__ = ["ListTaskRepository", "TaskRepository", "UserRepository"]

@@ -2,6 +2,7 @@ import uuid
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from task_manager.application.security.jwt import create_access_token
 
 from task_manager.infrastructure.api.task import get_list_router, get_task_router
 
@@ -15,33 +16,39 @@ def test_list_endpoints_crud(fake_list_usecases):
     app.include_router(router)
 
     client = TestClient(app)
+    token = create_access_token({"sub": "testuser"})
+    headers = {"Authorization": f"Bearer {token}"}
 
     # create
-    resp = client.post("/lists/", json={"name": "L1", "description": "d"})
+    resp = client.post(
+        "/lists/", json={"name": "L1", "description": "d"}, headers=headers
+    )
     assert resp.status_code == 201
     body = resp.json()
     list_id = body["id"]
 
     # list
-    resp = client.get("/lists/")
+    resp = client.get("/lists/", headers=headers)
     assert resp.status_code == 200
     assert any(element["id"] == list_id for element in resp.json())
 
     # get
-    resp = client.get(f"/lists/{list_id}")
+    resp = client.get(f"/lists/{list_id}", headers=headers)
     assert resp.status_code == 200
 
     # update
-    resp = client.put(f"/lists/{list_id}", json={"name": "L2", "description": None})
+    resp = client.put(
+        f"/lists/{list_id}", json={"name": "L2", "description": None}, headers=headers
+    )
     assert resp.status_code == 200
     assert resp.json()["name"] == "L2"
 
     # delete
-    resp = client.delete(f"/lists/{list_id}")
+    resp = client.delete(f"/lists/{list_id}", headers=headers)
     assert resp.status_code == 204
 
     # get missing -> 404
-    resp = client.get(f"/lists/{list_id}")
+    resp = client.get(f"/lists/{list_id}", headers=headers)
     assert resp.status_code == 404
 
 
@@ -57,6 +64,8 @@ def test_task_endpoints_crud_and_status(fake_task_usecases):
     app.include_router(router)
 
     client = TestClient(app)
+    token = create_access_token({"sub": "testuser"})
+    headers = {"Authorization": f"Bearer {token}"}
 
     # create
     payload = {
@@ -66,16 +75,16 @@ def test_task_endpoints_crud_and_status(fake_task_usecases):
         "status": "pending",
         "priority": "medium",
     }
-    resp = client.post("/tasks/", json=payload)
+    resp = client.post("/tasks/", json=payload, headers=headers)
     assert resp.status_code == 201
     tid = resp.json()["id"]
 
     # get
-    resp = client.get(f"/tasks/{tid}")
+    resp = client.get(f"/tasks/{tid}", headers=headers)
     assert resp.status_code == 200
 
     # update status
-    resp = client.patch(f"/tasks/{tid}", json={"status": "completed"})
+    resp = client.patch(f"/tasks/{tid}", json={"status": "completed"}, headers=headers)
     assert resp.status_code == 200
     assert resp.json()["status"] == "completed"
 
@@ -89,14 +98,15 @@ def test_task_endpoints_crud_and_status(fake_task_usecases):
             "status": "in_progress",
             "priority": "high",
         },
+        headers=headers,
     )
     assert resp.status_code == 200
     assert resp.json()["title"] == "T2"
 
     # delete
-    resp = client.delete(f"/tasks/{tid}")
+    resp = client.delete(f"/tasks/{tid}", headers=headers)
     assert resp.status_code == 204
 
     # get missing -> 404
-    resp = client.get(f"/tasks/{tid}")
+    resp = client.get(f"/tasks/{tid}", headers=headers)
     assert resp.status_code == 404

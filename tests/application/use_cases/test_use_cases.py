@@ -27,6 +27,7 @@ async def test_list_use_cases_crud_and_get_with_tasks(session_maker):
     assert created.name == "L1"
 
     # Create task in list
+    user_id = uuid.uuid4()
     task_data = type(
         "TD",
         (),
@@ -36,10 +37,12 @@ async def test_list_use_cases_crud_and_get_with_tasks(session_maker):
             "description": "desc",
             "status": Status.PENDING,
             "priority": Priority.MEDIUM,
+            "user_id": user_id,
         },
     )()
     created_task = await task_uc.create(task_data)
     assert created_task.title == "T1"
+    assert created_task.user_id == user_id
 
     # Get list with tasks and filtering
     got = await list_uc.get(created.id)
@@ -89,6 +92,7 @@ async def test_task_use_cases_update_status_and_delete(session_maker):
     assert updated.status == Status.COMPLETED
 
     # Update full task
+    new_user_id = uuid.uuid4()
     ud = type(
         "UD",
         (),
@@ -98,11 +102,13 @@ async def test_task_use_cases_update_status_and_delete(session_maker):
             "description": "now",
             "status": Status.IN_PROGRESS,
             "priority": Priority.HIGH,
+            "user_id": new_user_id,
         },
     )()
     updated_full = await task_uc.update(task_id, ud)
     assert updated_full.title == "T-new"
     assert updated_full.priority == Priority.HIGH
+    assert updated_full.user_id == new_user_id
 
     # Get task
     got = await task_uc.get(task_id)

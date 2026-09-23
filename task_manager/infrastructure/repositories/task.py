@@ -41,6 +41,7 @@ class TaskORM(Base):
     description = Column(Text, nullable=True)
     status = enum_column(Status, Status.PENDING)
     priority = enum_column(Priority, Priority.MEDIUM)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=True, index=True)
 
 
 def _list_to_domain(orm: ListTaskORM) -> DomainListTask:
@@ -60,6 +61,7 @@ def _task_to_domain(orm: TaskORM) -> DomainTask:
         description=orm.description,
         status=Status(orm.status),
         priority=Priority(orm.priority),
+        user_id=UUID(orm.user_id) if orm.user_id else None,
     )
 
 
@@ -138,6 +140,7 @@ class SQLAlchemyTaskRepository(TaskRepository):
                 description=task.description,
                 status=task.status,
                 priority=task.priority,
+                user_id=str(task.user_id) if task.user_id else None,
             )
             session.add(orm)
             await session.commit()
@@ -176,6 +179,7 @@ class SQLAlchemyTaskRepository(TaskRepository):
             orm.description = task.description
             orm.status = task.status
             orm.priority = task.priority
+            orm.user_id = str(task.user_id) if task.user_id else None
             await session.commit()
             await session.refresh(orm)
             return _task_to_domain(orm)
