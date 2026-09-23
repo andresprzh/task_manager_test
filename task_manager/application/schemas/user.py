@@ -24,13 +24,14 @@ class UserCreate(BaseModel):
     )
 
     model_config = {
+        "extra": "forbid",
         "json_schema_extra": {
             "example": {
                 "username": "john_doe",
                 "email": "john@example.com",
                 "password": "secret123",
             }
-        }
+        },
     }
 
 
@@ -64,9 +65,10 @@ class LoginRequest(BaseModel):
     )
 
     model_config = {
+        "extra": "forbid",
         "json_schema_extra": {
             "example": {"username": "john_doe", "password": "secret123"}
-        }
+        },
     }
 
 
