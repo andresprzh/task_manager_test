@@ -7,14 +7,14 @@ from uuid import UUID
 class Priority(str, Enum):
     """Severity layers a task can be classified with, from most to least urgent."""
 
-    CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-    TRIVIAL = "trivial"
 
 
 class Status(str, Enum):
+    """How far along a task is: pending -> in_progress -> completed."""
+
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
@@ -35,5 +35,4 @@ class ListTask:
     id: UUID
     name: str
     description: Optional[str] = None
-    completed: bool = False
     tasks: List[Task] = field(default_factory=list)

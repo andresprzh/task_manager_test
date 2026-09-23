@@ -24,7 +24,7 @@ def test_list_task_holds_many_tasks():
         title="Ship hotfix",
         list_id=list_id,
         status=Status.IN_PROGRESS,
-        priority=Priority.CRITICAL,
+        priority=Priority.HIGH,
     )
     task_list = ListTask(id=list_id, name="Release", tasks=[first, second])
 
@@ -36,4 +36,3 @@ def test_list_task_defaults_to_no_tasks():
     task_list = ListTask(id=uuid4(), name="Inbox")
 
     assert task_list.tasks == []
-    assert task_list.completed is False
