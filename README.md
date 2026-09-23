@@ -1,17 +1,55 @@
-# Task Manager (Layered Architecture)
+# Task Manager 
 
-This sample FastAPI project demonstrates a simple layered architecture with:
+Simple Task Management API with JWT authentication, built with FastAPI and SQLAlchemy.
 
-- Domain: entities and repository interfaces
-- Application: use-cases and DTOs (Pydantic schemas)
-- Infrastructure: concrete repository implementation and HTTP adapters
+### Folder Organization
+
+```
+task_manager/
+├── app/
+│   ├── __init__.py
+│   └── main.py                 # FastAPI app initialization and router setup
+├── application/
+│   ├── __init__.py
+│   ├── schemas/                # Pydantic models for request/response
+│   └── use_cases/              # Business logic orchestrators
+│       ├── __init__.py
+│       └── task.py             # TaskUseCase, ListTaskUseCase
+├── domain/
+│   ├── __init__.py
+│   ├── models/                 # Domain entities (Task, ListTask)
+│   │   ├── __init__.py
+│   │   └── task.py
+│   └── repositories/           # Repository interfaces
+│       ├── __init__.py
+│       └── base.py
+└── infrastructure/
+    ├── __init__.py
+    ├── api/                    # FastAPI router functions
+    │   ├── __init__.py
+    │   └── task.py             # API endpoints for tasks/lists
+    └── repositories/           # Repository implementations (SQLAlchemy)
+        ├── __init__.py
+        └── task.py             # SQLAlchemyTaskRepository, SQLAlchemyListTaskRepository
+
+tests/                          # Mirror of source structure with corresponding tests
+├── application/
+├── domain/
+├── infrastructure/
+└── conftest.py                 # Pytest fixtures
+```
+
 
 ## Quickstart (Docker Compose)
 
 1. Build and start the service using Docker Compose (recommended):
 
 ```bash
-docker compose up --build --detach
+docker compose build
+```
+
+```bash
+docker compose up -d
 ```
 
 2. View logs or follow them:
@@ -26,7 +64,7 @@ docker compose logs -f
 docker compose down
 ```
 
-4. Open the docs at: http://127.0.0.1:8000/
+4. Open the app at: http://127.0.0.1:8000/
 
 ## Pre-commit installation
 
